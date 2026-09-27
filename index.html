@@ -212,12 +212,12 @@
                 <tr>
                     <th>Öğrenci No</th>
                     <th>Matematik</th>
-                    <th>Geometri</th>
-                    <th>Fizik</th>
-                    <th>Kimya</th>
-                    <th>Biyoloji</th>
                     <th>Türkçe</th>
-                    <th>Sosyal</th>
+                    <th>Tarih</th>
+                    <th>Coğrafya</th>
+                    <th>Felsefe</th>
+                    <th>Din Kültürü</th>
+                    <th>Fen</th>
                     <th>Toplam</th>
                 </tr>
             </thead>
@@ -237,21 +237,22 @@
     </div>
 
     <script>
-        // Okunan 30 Öğrenci Numarası Listesi
+        // Öğrenci Numaraları Listesi
         const studentNumbers = [
             "6", "174", "226", "252", "331", "357", "362", "369", "378", "389",
             "390", "393", "407", "418", "434", "436", "463", "475", "484", "508",
             "517", "534", "535", "548", "556", "588", "600", "602", "608", "625"
         ];
 
+        // Yeni Ders Listesi
         const subjects = [
             { id: 'mat', name: 'Matematik' },
-            { id: 'geo', name: 'Geometri' },
-            { id: 'fizik', name: 'Fizik' },
-            { id: 'kimya', name: 'Kimya' },
-            { id: 'biyo', name: 'Biyoloji' },
             { id: 'turkce', name: 'Türkçe' },
-            { id: 'sosyal', name: 'Sosyal' }
+            { id: 'tarih', name: 'Tarih' },
+            { id: 'cografya', name: 'Coğrafya' },
+            { id: 'felsefe', name: 'Felsefe' },
+            { id: 'din', name: 'Din Kültürü' },
+            { id: 'fen', name: 'Fen' }
         ];
 
         const dateInput = document.getElementById('dateSelect');
@@ -260,7 +261,7 @@
 
         function renderTable() {
             tableBody.innerHTML = '';
-            studentNumbers.forEach((num, index) => {
+            studentNumbers.forEach((num) => {
                 const tr = document.createElement('tr');
                 
                 let inputsHtml = subjects.map(sub => `
@@ -364,7 +365,7 @@
             const selectedDate = dateInput.value || 'Tarihsiz';
             let csvContent = "\uFEFF"; // Türkçe karakter desteği için BOM
             csvContent += `Tarih: ${selectedDate}\n\n`;
-            csvContent += "Ogrenci No,Matematik,Geometri,Fizik,Kimya,Biyoloji,Turkce,Sosyal,Toplam\n";
+            csvContent += "Ogrenci No,Matematik,Turkce,Tarih,Cografya,Felsefe,Din Kulturu,Fen,Toplam\n";
 
             studentNumbers.forEach(num => {
                 let row = [`No: ${num}`];
