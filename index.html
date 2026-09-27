@@ -8,6 +8,8 @@
         :root {
             --primary: #4f46e5;
             --primary-hover: #4338ca;
+            --success: #16a34a;
+            --success-hover: #15803d;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #0f172a;
@@ -40,7 +42,7 @@
 
         .controls {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             align-items: center;
@@ -51,11 +53,17 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
         select, input, button {
             padding: 10px 14px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             outline: none;
         }
 
@@ -65,9 +73,15 @@
             border: none;
             cursor: pointer;
             font-weight: 600;
+            transition: background 0.2s;
         }
 
         button:hover { background-color: var(--primary-hover); }
+        .btn-excel { background-color: var(--success); }
+        .btn-excel:hover { background-color: var(--success-hover); }
+        .btn-print { background-color: #0284c7; }
+        .btn-print:hover { background-color: #0369a1; }
+        .btn-reset { background-color: #ef4444; }
 
         .grid-container {
             overflow-x: auto;
@@ -103,9 +117,7 @@
             text-decoration: underline;
         }
 
-        .student-link:hover {
-            color: var(--primary-hover);
-        }
+        .student-link:hover { color: var(--primary-hover); }
 
         .subject-input {
             width: 70px;
@@ -149,11 +161,7 @@
             padding-bottom: 8px;
         }
 
-        .close-btn {
-            background: #ef4444;
-            padding: 4px 10px;
-            font-size: 0.9rem;
-        }
+        .close-btn { background: #ef4444; padding: 4px 10px; font-size: 0.9rem; }
 
         .stat-item {
             display: flex;
@@ -161,13 +169,28 @@
             padding: 8px 0;
             border-bottom: 1px dashed var(--border);
         }
+
+        /* Yazdırma Modu (PDF Hazırlama İçin) */
+        @media print {
+            .controls, .close-btn, header p { display: none !important; }
+            body { padding: 0; background: white; }
+            .grid-container { box-shadow: none; border: none; }
+            .subject-input { border: none; background: transparent; }
+            .student-link { text-decoration: none; color: black; }
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .btn-group { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>YKS Günlük Soru Takip Sistemi</h1>
-        <p class="subtitle">Öğrenci ismine tıklayarak detaylı çözülen soruları görüntüleyebilirsiniz.</p>
+        <p class="subtitle">Öğrenci ismine tıklayarak detayı görebilir, Excel ve PDF raporu alabilirsiniz.</p>
     </header>
 
     <div class="controls">
@@ -175,9 +198,11 @@
             <label for="dateSelect" style="font-weight: 600; margin-right: 8px;">Tarih Seçin:</label>
             <input type="date" id="dateSelect">
         </div>
-        <div>
+        <div class="btn-group">
             <button onclick="saveData()">Verileri Kaydet</button>
-            <button onclick="resetData()" style="background-color: #ef4444; margin-left: 8px;">Sıfırla</button>
+            <button class="btn-excel" onclick="exportToExcel()">📊 Excel'e Aktar</button>
+            <button class="btn-print" onclick="window.print()">📄 PDF / Yazdır</button>
+            <button class="btn-reset" onclick="resetData()">Sıfırla</button>
         </div>
     </div>
 
@@ -185,7 +210,7 @@
         <table>
             <thead>
                 <tr>
-                    <th># Öğrenci (Detay için tıkla)</th>
+                    <th># Öğrenci</th>
                     <th>Matematik</th>
                     <th>Geometri</th>
                     <th>Fizik</th>
@@ -200,16 +225,14 @@
         </table>
     </div>
 
-    <!-- Öğrenci Detay Modalı -->
+    <!-- Modal Detay Penceresi -->
     <div id="studentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalStudentTitle">Öğrenci Detayı</h2>
                 <button class="close-btn" onclick="closeModal()">Kapat</button>
             </div>
-            <div id="modalBody">
-                <!-- Detaylar buraya yüklenecek -->
-            </div>
+            <div id="modalBody"></div>
         </div>
     </div>
 
@@ -274,7 +297,7 @@
             }
 
             localStorage.setItem(`yks_data_${dateKey}`, JSON.stringify(currentData));
-            alert('Veriler kaydedildi!');
+            alert('Veriler başarıyla kaydedildi!');
         }
 
         function loadData() {
@@ -295,7 +318,7 @@
         }
 
         function openStudentDetail(studentId) {
-            document.getElementById('modalStudentTitle').innerText = `Öğrenci ${studentId} - Seçili Gün Detayı`;
+            document.getElementById('modalStudentTitle').innerText = `Öğrenci ${studentId} - Rapor`;
             const modalBody = document.getElementById('modalBody');
             
             let totalQuestions = 0;
@@ -322,12 +345,43 @@
             </div>`;
 
             modalBody.innerHTML = detailHtml;
-            document.getElementById('studentModal').style.style.display = 'none'; // reset
             document.getElementById('studentModal').style.display = 'flex';
         }
 
         function closeModal() {
             document.getElementById('studentModal').style.display = 'none';
+        }
+
+        /* Excel / CSV İndirme İşlevi */
+        function exportToExcel() {
+            const selectedDate = dateInput.value || 'Tarihsiz';
+            let csvContent = "\uFEFF"; // Türkçe karakter desteği için BOM
+            csvContent += `Tarih: ${selectedDate}\n\n`;
+            csvContent += "Ogrenci,Matematik,Geometri,Fizik,Kimya,Biyoloji,Turkce,Sosyal,Toplam\n";
+
+            for (let i = 1; i <= 30; i++) {
+                let row = [`Ogrenci ${i}`];
+                let rowTotal = 0;
+
+                subjects.forEach(sub => {
+                    const input = document.querySelector(`input[data-student="${i}"][data-subject="${sub.id}"]`);
+                    const val = parseInt(input.value) || 0;
+                    rowTotal += val;
+                    row.push(val);
+                });
+
+                row.push(rowTotal);
+                csvContent += row.join(",") + "\n";
+            }
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `YKS_Rapor_${selectedDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function resetData() {
