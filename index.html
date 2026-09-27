@@ -1,327 +1,345 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YKS Günlük Soru Takip Sistemi</title>
-  <style>
-    :root {
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YKS Günlük Soru Takip Sistemi</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 20px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--border);
-      flex-wrap: wrap;
-      gap: 12px;
-    }
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
 
-    h1 {
-      font-size: 1.5rem;
-      color: var(--primary);
-    }
+        h1 { color: var(--primary); font-size: 1.8rem; margin-bottom: 8px; }
+        p.subtitle { color: var(--text-muted); font-size: 0.95rem; }
 
-    .nav-btn {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
 
-    .nav-btn.active {
-      background-color: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
+        select, input, button {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
 
-    .view {
-      display: none;
-    }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
 
-    .view.active {
-      display: block;
-    }
+        button:hover { background-color: var(--primary-hover); }
 
-    /* Öğrenci Izgarası */
-    .student-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
-    }
+        .grid-container {
+            overflow-x: auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
 
-    .student-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 16px;
-      border-radius: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
 
-    .student-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-      border-color: var(--primary);
-    }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
 
-    .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #e0e7ff;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 12px;
-      font-weight: bold;
-    }
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
 
-    /* Veri Giriş Formu */
-    .form-container {
-      background: var(--card-bg);
-      padding: 24px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      max-width: 600px;
-      margin: 0 auto;
-    }
+        .student-link {
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: underline;
+        }
 
-    .form-group {
-      margin-bottom: 16px;
-    }
+        .student-link:hover {
+            color: var(--primary-hover);
+        }
 
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
+        .subject-input {
+            width: 70px;
+            text-align: center;
+            padding: 6px;
+        }
 
-    input[type="number"], input[type="date"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 1rem;
-    }
+        .total-cell {
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+        }
 
-    .submit-btn {
-      width: 100%;
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 12px;
-    }
+        /* Modal (Öğrenci Detay Penceresi) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-    /* Rapor Tablosu */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--card-bg);
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
 
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
 
-    th {
-      background-color: #f1f5f9;
-      font-weight: 600;
-    }
-  </style>
+        .close-btn {
+            background: #ef4444;
+            padding: 4px 10px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>12-EA Soru Takip Paneli</h1>
-    <div>
-      <button class="nav-btn active" onclick="switchView('rosterView')">Öğrenci Giriş Ekranı</button>
-      <button class="nav-btn" onclick="switchView('reportView')">Öğretmen Rapor Ekranı</button>
-    </div>
-  </header>
+    <header>
+        <h1>YKS Günlük Soru Takip Sistemi</h1>
+        <p class="subtitle">Öğrenci ismine tıklayarak detaylı çözülen soruları görüntüleyebilirsiniz.</p>
+    </header>
 
-  <!-- 1. Ekran: Öğrenci Seçim Listesi -->
-  <div id="rosterView" class="view active">
-    <h2 style="margin-bottom: 16px;">İsminizi Seçin:</h2>
-    <div class="student-grid" id="studentGrid"></div>
-  </div>
-
-  <!-- 2. Ekran: Bireysel Soru Giriş Alanı -->
-  <div id="entryView" class="view">
-    <button onclick="switchView('rosterView')" style="margin-bottom: 16px; background: none; border: none; color: var(--primary); cursor: pointer; font-weight: bold;">← Sınıf Listesine Dön</button>
-    <div class="form-container">
-      <h2 id="selectedStudentName" style="margin-bottom: 8px;">Öğrenci Adı</h2>
-      <p style="color: var(--text-muted); margin-bottom: 20px;">Günlük çözdüğünüz soru sayılarını giriniz.</p>
-
-      <form id="questionForm">
-        <div class="form-group">
-          <label>Tarih</label>
-          <input type="date" id="entryDate" required>
+    <div class="controls">
+        <div>
+            <label for="dateSelect" style="font-weight: 600; margin-right: 8px;">Tarih Seçin:</label>
+            <input type="date" id="dateSelect">
         </div>
-
-        <div class="form-group"><label>Türkçe</label><input type="number" id="sub_turkce" min="0" placeholder="0"></div>
-        <div class="form-group"><label>Matematik</label><input type="number" id="sub_matematik" min="0" placeholder="0"></div>
-        <div class="form-group"><label>Tarih</label><input type="number" id="sub_tarih" min="0" placeholder="0"></div>
-        <div class="form-group"><label>Coğrafya</label><input type="number" id="sub_cografya" min="0" placeholder="0"></div>
-        <div class="form-group"><label>Felsefe</label><input type="number" id="sub_felsefe" min="0" placeholder="0"></div>
-        <div class="form-group"><label>Din Kültürü</label><input type="number" id="sub_din" min="0" placeholder="0"></div>
-        <div class="form-group"><label>Fen Bilimleri</label><input type="number" id="sub_fen" min="0" placeholder="0"></div>
-
-        <button type="submit" class="submit-btn">Günü Kaydet</button>
-      </form>
+        <div>
+            <button onclick="saveData()">Verileri Kaydet</button>
+            <button onclick="resetData()" style="background-color: #ef4444; margin-left: 8px;">Sıfırla</button>
+        </div>
     </div>
-  </div>
 
-  <!-- 3. Ekran: Öğretmen Rapor Alanı -->
-  <div id="reportView" class="view">
-    <h2 style="margin-bottom: 16px;">Sınıf Genel Soru Raporu</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Öğrenci Adı</th>
-          <th>Toplam Çözülen Soru</th>
-        </tr>
-      </thead>
-      <tbody id="reportTableBody"></tbody>
-    </table>
-  </div>
+    <div class="grid-container">
+        <table>
+            <thead>
+                <tr>
+                    <th># Öğrenci (Detay için tıkla)</th>
+                    <th>Matematik</th>
+                    <th>Geometri</th>
+                    <th>Fizik</th>
+                    <th>Kimya</th>
+                    <th>Biyoloji</th>
+                    <th>Türkçe</th>
+                    <th>Sosyal</th>
+                    <th>Toplam</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody"></tbody>
+        </table>
+    </div>
 
-  <script>
-    // 30 Kişilik Sınıf Listesi
-    const students = [
-      "Ahmet Yılmaz", "Ayşe Demir", "Mehmet Kaya", "Fatma Çelik", "Mustafa Şahin", 
-      "Zeynep Yıldız", "Ali Yıldırım", "Elif Öztürk", "Hasan Aydın", "Hatice Özdemir", 
-      "İbrahim Arslan", "Merve Doğan", "Hüseyin Kılıç", "Esra Aslan", "Osman Çetin", 
-      "Büşra Kara", "İsmail Koç", "Kübra Kurt", "Yusuf Özkan", "Meryem Şimşek", 
-      "Ömer Polat", "Yasemin Öz", "Ramazan Korkmaz", "Tuğba Erdoğan", "Halil Yavuz", 
-      "Emine Can", "Süleyman Yücel", "Gökçe Yalçın", "Burak Güneş", "Ceren Bozkurt"
-    ];
+    <!-- Öğrenci Detay Modalı -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalStudentTitle">Öğrenci Detayı</h2>
+                <button class="close-btn" onclick="closeModal()">Kapat</button>
+            </div>
+            <div id="modalBody">
+                <!-- Detaylar buraya yüklenecek -->
+            </div>
+        </div>
+    </div>
 
-    let currentStudent = "";
-    let studentData = JSON.parse(localStorage.getItem("yks_student_data")) || {};
+    <script>
+        const subjects = [
+            { id: 'mat', name: 'Matematik' },
+            { id: 'geo', name: 'Geometri' },
+            { id: 'fizik', name: 'Fizik' },
+            { id: 'kimya', name: 'Kimya' },
+            { id: 'biyo', name: 'Biyoloji' },
+            { id: 'turkce', name: 'Türkçe' },
+            { id: 'sosyal', name: 'Sosyal' }
+        ];
 
-    // Sayfa Yüklendiğinde
-    window.onload = () => {
-      document.getElementById('entryDate').valueAsDate = new Date();
-      renderRoster();
-      renderReport();
-    };
+        const dateInput = document.getElementById('dateSelect');
+        const tableBody = document.getElementById('studentTableBody');
+        dateInput.valueAsDate = new Date();
 
-    // Ekran Değiştirme
-    function switchView(viewId) {
-      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-      
-      document.getElementById(viewId).classList.add('active');
-      if (viewId === 'reportView') renderReport();
-    }
+        function renderTable() {
+            tableBody.innerHTML = '';
+            for (let i = 1; i <= 30; i++) {
+                const tr = document.createElement('tr');
+                
+                let inputsHtml = subjects.map(sub => `
+                    <td>
+                        <input type="number" min="0" class="subject-input" data-student="${i}" data-subject="${sub.id}" value="0" oninput="calculateTotal(${i})">
+                    </td>
+                `).join('');
 
-    // Öğrenci Kartlarını Oluşturma
-    function renderRoster() {
-      const grid = document.getElementById('studentGrid');
-      grid.innerHTML = "";
-      students.forEach((name, index) => {
-        const card = document.createElement('div');
-        card.className = 'student-card';
-        card.onclick = () => openStudentPortal(name);
-        card.innerHTML = `
-          <div class="avatar">${name.charAt(0)}</div>
-          <div style="font-weight:600;">${name}</div>
-          <div style="font-size:0.8rem; color:var(--text-muted);">No: ${101 + index}</div>
-        `;
-        grid.appendChild(card);
-      });
-    }
+                tr.innerHTML = `
+                    <td>
+                        <span class="student-link" onclick="openStudentDetail(${i})">Öğrenci ${i}</span>
+                    </td>
+                    ${inputsHtml}
+                    <td class="total-cell" id="total-${i}">0</td>
+                `;
+                tableBody.appendChild(tr);
+            }
+            loadData();
+        }
 
-    // Öğrenci Sayfasına Geçiş
-    function openStudentPortal(name) {
-      currentStudent = name;
-      document.getElementById('selectedStudentName').innerText = name;
-      switchView('entryView');
-    }
+        function calculateTotal(studentId) {
+            let total = 0;
+            subjects.forEach(sub => {
+                const input = document.querySelector(`input[data-student="${studentId}"][data-subject="${sub.id}"]`);
+                total += parseInt(input.value) || 0;
+            });
+            document.getElementById(`total-${studentId}`).innerText = total;
+        }
 
-    // Veri Kaydetme
-    document.getElementById('questionForm').onsubmit = (e) => {
-      e.preventDefault();
-      const date = document.getElementById('entryDate').value;
-      
-      const subjects = ['turkce', 'matematik', 'tarih', 'cografya', 'felsefe', 'din', 'fen'];
-      let dayTotal = 0;
+        function saveData() {
+            const dateKey = dateInput.value;
+            if (!dateKey) return alert('Lütfen bir tarih seçin.');
 
-      subjects.forEach(sub => {
-        const val = parseInt(document.getElementById(`sub_${sub}`).value) || 0;
-        dayTotal += val;
-      });
+            const currentData = {};
+            for (let i = 1; i <= 30; i++) {
+                currentData[i] = {};
+                subjects.forEach(sub => {
+                    const input = document.querySelector(`input[data-student="${i}"][data-subject="${sub.id}"]`);
+                    currentData[i][sub.id] = parseInt(input.value) || 0;
+                });
+            }
 
-      if (!studentData[currentStudent]) studentData[currentStudent] = [];
-      studentData[currentStudent].push({ date, total: dayTotal });
+            localStorage.setItem(`yks_data_${dateKey}`, JSON.stringify(currentData));
+            alert('Veriler kaydedildi!');
+        }
 
-      localStorage.setItem("yks_student_data", JSON.stringify(studentData));
-      alert("Soru sayıları başarıyla kaydedildi!");
-      document.getElementById('questionForm').reset();
-      document.getElementById('entryDate').valueAsDate = new Date();
-      switchView('rosterView');
-    };
+        function loadData() {
+            const dateKey = dateInput.value;
+            const savedData = JSON.parse(localStorage.getItem(`yks_data_${dateKey}`));
 
-    // Öğretmen Rapor Tablosunu Oluşturma
-    function renderReport() {
-      const tbody = document.getElementById('reportTableBody');
-      tbody.innerHTML = "";
+            for (let i = 1; i <= 30; i++) {
+                subjects.forEach(sub => {
+                    const input = document.querySelector(`input[data-student="${i}"][data-subject="${sub.id}"]`);
+                    if (savedData && savedData[i] && savedData[i][sub.id] !== undefined) {
+                        input.value = savedData[i][sub.id];
+                    } else {
+                        input.value = 0;
+                    }
+                });
+                calculateTotal(i);
+            }
+        }
 
-      students.forEach((name, index) => {
-        const records = studentData[name] || [];
-        const totalSolved = records.reduce((acc, curr) => acc + curr.total, 0);
+        function openStudentDetail(studentId) {
+            document.getElementById('modalStudentTitle').innerText = `Öğrenci ${studentId} - Seçili Gün Detayı`;
+            const modalBody = document.getElementById('modalBody');
+            
+            let totalQuestions = 0;
+            let detailHtml = '<div style="margin-top:10px;">';
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${101 + index}</td>
-          <td><strong>${name}</strong></td>
-          <td>${totalSolved} Soru</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-  </script>
+            subjects.forEach(sub => {
+                const input = document.querySelector(`input[data-student="${studentId}"][data-subject="${sub.id}"]`);
+                const val = parseInt(input.value) || 0;
+                totalQuestions += val;
+                
+                detailHtml += `
+                    <div class="stat-item">
+                        <span><strong>${sub.name}:</strong></span>
+                        <span>${val} Soru</span>
+                    </div>
+                `;
+            });
+
+            detailHtml += `
+                <div class="stat-item" style="font-size:1.1rem; font-weight:bold; color:var(--primary); margin-top:12px;">
+                    <span>Günlük Toplam:</span>
+                    <span>${totalQuestions} Soru</span>
+                </div>
+            </div>`;
+
+            modalBody.innerHTML = detailHtml;
+            document.getElementById('studentModal').style.style.display = 'none'; // reset
+            document.getElementById('studentModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('studentModal').style.display = 'none';
+        }
+
+        function resetData() {
+            if (confirm('Seçili günün verilerini sıfırlamak istiyor musunuz?')) {
+                const dateKey = dateInput.value;
+                localStorage.removeItem(`yks_data_${dateKey}`);
+                loadData();
+            }
+        }
+
+        dateInput.addEventListener('change', loadData);
+        renderTable();
+    </script>
 </body>
 </html>
