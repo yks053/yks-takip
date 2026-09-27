@@ -190,7 +190,7 @@
 
     <header>
         <h1>YKS Günlük Soru Takip Sistemi</h1>
-        <p class="subtitle">Öğrenci ismine tıklayarak detayı görebilir, Excel ve PDF raporu alabilirsiniz.</p>
+        <p class="subtitle">Öğrenci numarasına tıklayarak detayı görebilir, Excel ve PDF raporu alabilirsiniz.</p>
     </header>
 
     <div class="controls">
@@ -210,7 +210,7 @@
         <table>
             <thead>
                 <tr>
-                    <th># Öğrenci</th>
+                    <th>Öğrenci No</th>
                     <th>Matematik</th>
                     <th>Geometri</th>
                     <th>Fizik</th>
@@ -237,6 +237,13 @@
     </div>
 
     <script>
+        // Okunan 30 Öğrenci Numarası Listesi
+        const studentNumbers = [
+            "6", "174", "226", "252", "331", "357", "362", "369", "378", "389",
+            "390", "393", "407", "418", "434", "436", "463", "475", "484", "508",
+            "517", "534", "535", "548", "556", "588", "600", "602", "608", "625"
+        ];
+
         const subjects = [
             { id: 'mat', name: 'Matematik' },
             { id: 'geo', name: 'Geometri' },
@@ -253,34 +260,34 @@
 
         function renderTable() {
             tableBody.innerHTML = '';
-            for (let i = 1; i <= 30; i++) {
+            studentNumbers.forEach((num, index) => {
                 const tr = document.createElement('tr');
                 
                 let inputsHtml = subjects.map(sub => `
                     <td>
-                        <input type="number" min="0" class="subject-input" data-student="${i}" data-subject="${sub.id}" value="0" oninput="calculateTotal(${i})">
+                        <input type="number" min="0" class="subject-input" data-student="${num}" data-subject="${sub.id}" value="0" oninput="calculateTotal('${num}')">
                     </td>
                 `).join('');
 
                 tr.innerHTML = `
                     <td>
-                        <span class="student-link" onclick="openStudentDetail(${i})">Öğrenci ${i}</span>
+                        <span class="student-link" onclick="openStudentDetail('${num}')">No: ${num}</span>
                     </td>
                     ${inputsHtml}
-                    <td class="total-cell" id="total-${i}">0</td>
+                    <td class="total-cell" id="total-${num}">0</td>
                 `;
                 tableBody.appendChild(tr);
-            }
+            });
             loadData();
         }
 
-        function calculateTotal(studentId) {
+        function calculateTotal(studentNum) {
             let total = 0;
             subjects.forEach(sub => {
-                const input = document.querySelector(`input[data-student="${studentId}"][data-subject="${sub.id}"]`);
+                const input = document.querySelector(`input[data-student="${studentNum}"][data-subject="${sub.id}"]`);
                 total += parseInt(input.value) || 0;
             });
-            document.getElementById(`total-${studentId}`).innerText = total;
+            document.getElementById(`total-${studentNum}`).innerText = total;
         }
 
         function saveData() {
@@ -288,13 +295,13 @@
             if (!dateKey) return alert('Lütfen bir tarih seçin.');
 
             const currentData = {};
-            for (let i = 1; i <= 30; i++) {
-                currentData[i] = {};
+            studentNumbers.forEach(num => {
+                currentData[num] = {};
                 subjects.forEach(sub => {
-                    const input = document.querySelector(`input[data-student="${i}"][data-subject="${sub.id}"]`);
-                    currentData[i][sub.id] = parseInt(input.value) || 0;
+                    const input = document.querySelector(`input[data-student="${num}"][data-subject="${sub.id}"]`);
+                    currentData[num][sub.id] = parseInt(input.value) || 0;
                 });
-            }
+            });
 
             localStorage.setItem(`yks_data_${dateKey}`, JSON.stringify(currentData));
             alert('Veriler başarıyla kaydedildi!');
@@ -304,28 +311,28 @@
             const dateKey = dateInput.value;
             const savedData = JSON.parse(localStorage.getItem(`yks_data_${dateKey}`));
 
-            for (let i = 1; i <= 30; i++) {
+            studentNumbers.forEach(num => {
                 subjects.forEach(sub => {
-                    const input = document.querySelector(`input[data-student="${i}"][data-subject="${sub.id}"]`);
-                    if (savedData && savedData[i] && savedData[i][sub.id] !== undefined) {
-                        input.value = savedData[i][sub.id];
+                    const input = document.querySelector(`input[data-student="${num}"][data-subject="${sub.id}"]`);
+                    if (savedData && savedData[num] && savedData[num][sub.id] !== undefined) {
+                        input.value = savedData[num][sub.id];
                     } else {
                         input.value = 0;
                     }
                 });
-                calculateTotal(i);
-            }
+                calculateTotal(num);
+            });
         }
 
-        function openStudentDetail(studentId) {
-            document.getElementById('modalStudentTitle').innerText = `Öğrenci ${studentId} - Rapor`;
+        function openStudentDetail(studentNum) {
+            document.getElementById('modalStudentTitle').innerText = `Öğrenci No: ${studentNum} - Rapor`;
             const modalBody = document.getElementById('modalBody');
             
             let totalQuestions = 0;
             let detailHtml = '<div style="margin-top:10px;">';
 
             subjects.forEach(sub => {
-                const input = document.querySelector(`input[data-student="${studentId}"][data-subject="${sub.id}"]`);
+                const input = document.querySelector(`input[data-student="${studentNum}"][data-subject="${sub.id}"]`);
                 const val = parseInt(input.value) || 0;
                 totalQuestions += val;
                 
@@ -357,14 +364,14 @@
             const selectedDate = dateInput.value || 'Tarihsiz';
             let csvContent = "\uFEFF"; // Türkçe karakter desteği için BOM
             csvContent += `Tarih: ${selectedDate}\n\n`;
-            csvContent += "Ogrenci,Matematik,Geometri,Fizik,Kimya,Biyoloji,Turkce,Sosyal,Toplam\n";
+            csvContent += "Ogrenci No,Matematik,Geometri,Fizik,Kimya,Biyoloji,Turkce,Sosyal,Toplam\n";
 
-            for (let i = 1; i <= 30; i++) {
-                let row = [`Ogrenci ${i}`];
+            studentNumbers.forEach(num => {
+                let row = [`No: ${num}`];
                 let rowTotal = 0;
 
                 subjects.forEach(sub => {
-                    const input = document.querySelector(`input[data-student="${i}"][data-subject="${sub.id}"]`);
+                    const input = document.querySelector(`input[data-student="${num}"][data-subject="${sub.id}"]`);
                     const val = parseInt(input.value) || 0;
                     rowTotal += val;
                     row.push(val);
@@ -372,7 +379,7 @@
 
                 row.push(rowTotal);
                 csvContent += row.join(",") + "\n";
-            }
+            });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
