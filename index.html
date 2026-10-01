@@ -229,13 +229,13 @@
             <thead>
                 <tr>
                     <th>Öğrenci No</th>
-                    <th>Matematik</th>
-                    <th>Geometri</th>
-                    <th>Fizik</th>
-                    <th>Kimya</th>
-                    <th>Biyoloji</th>
                     <th>Türkçe</th>
-                    <th>Sosyal</th>
+                    <th>Matematik</th>
+                    <th>Tarih</th>
+                    <th>Coğrafya</th>
+                    <th>Felsefe</th>
+                    <th>Din Kültürü</th>
+                    <th>Fen</th>
                     <th>Toplam</th>
                 </tr>
             </thead>
@@ -243,13 +243,13 @@
             <tfoot>
                 <tr>
                     <td style="text-align: left;">Genel Toplam</td>
-                    <td id="col-total-mat">0</td>
-                    <td id="col-total-geo">0</td>
-                    <td id="col-total-fizik">0</td>
-                    <td id="col-total-kimya">0</td>
-                    <td id="col-total-biyo">0</td>
                     <td id="col-total-turkce">0</td>
-                    <td id="col-total-sosyal">0</td>
+                    <td id="col-total-mat">0</td>
+                    <td id="col-total-tarih">0</td>
+                    <td id="col-total-cografya">0</td>
+                    <td id="col-total-felsefe">0</td>
+                    <td id="col-total-din">0</td>
+                    <td id="col-total-fen">0</td>
                     <td id="grand-total">0</td>
                 </tr>
             </tfoot>
@@ -275,13 +275,13 @@
         ];
 
         const subjects = [
-            { id: 'mat', name: 'Matematik' },
-            { id: 'geo', name: 'Geometri' },
-            { id: 'fizik', name: 'Fizik' },
-            { id: 'kimya', name: 'Kimya' },
-            { id: 'biyo', name: 'Biyoloji' },
             { id: 'turkce', name: 'Türkçe' },
-            { id: 'sosyal', name: 'Sosyal' }
+            { id: 'mat', name: 'Matematik' },
+            { id: 'tarih', name: 'Tarih' },
+            { id: 'cografya', name: 'Coğrafya' },
+            { id: 'felsefe', name: 'Felsefe' },
+            { id: 'din', name: 'Din Kültürü' },
+            { id: 'fen', name: 'Fen' }
         ];
 
         const dateInput = document.getElementById('dateSelect');
@@ -376,7 +376,6 @@
             calculateColumnTotals();
         }
 
-        // Öğrencinin seçili gün ve tüm zamanlardaki soru toplamını hesaplar
         function openStudentDetail(studentNum) {
             document.getElementById('modalStudentTitle').innerText = `Öğrenci No: ${studentNum} - Performans Raporu`;
             const modalBody = document.getElementById('modalBody');
@@ -404,7 +403,6 @@
                 </div>
             `;
 
-            // Tüm zamanlardaki toplam soruyu hesaplama
             let grandAllTimeTotal = 0;
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -445,7 +443,7 @@
             const selectedDate = dateInput.value || 'Tarihsiz';
             let csvContent = "\uFEFF";
             csvContent += `Tarih: ${selectedDate}\n\n`;
-            csvContent += "Ogrenci No,Matematik,Geometri,Fizik,Kimya,Biyoloji,Turkce,Sosyal,Toplam\n";
+            csvContent += "Ogrenci No,Turkce,Matematik,Tarih,Cografya,Felsefe,Din Kulturu,Fen,Toplam\n";
 
             studentNumbers.forEach(num => {
                 let row = [`No: ${num}`];
