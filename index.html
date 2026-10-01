@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YKS Günlük Soru Takip Sistemi</title>
-    
-    <!-- Link Simgesi (Favicon - Kalem/Kitap İkonu) -->
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2997/2997300.png" type="image/png">
-    
     <style>
         :root {
             --primary: #4f46e5;
@@ -85,7 +81,6 @@
         .btn-excel:hover { background-color: var(--success-hover); }
         .btn-print { background-color: #0284c7; }
         .btn-print:hover { background-color: #0369a1; }
-        .btn-reset { background-color: #ef4444; }
 
         .grid-container {
             overflow-x: auto;
@@ -112,6 +107,17 @@
             color: var(--text-muted);
             font-weight: 600;
             font-size: 0.85rem;
+        }
+
+        tfoot tr {
+            background-color: #f8fafc;
+            font-weight: bold;
+        }
+
+        tfoot td {
+            border-top: 2px solid var(--border);
+            color: var(--primary);
+            text-align: center;
         }
 
         .student-link {
@@ -174,7 +180,16 @@
             border-bottom: 1px dashed var(--border);
         }
 
-        /* Yazdırma Modu (PDF Hazırlama İçin) */
+        .overall-box {
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        /* Yazdırma Modu */
         @media print {
             .controls, .close-btn, header p { display: none !important; }
             body { padding: 0; background: white; }
@@ -194,7 +209,7 @@
 
     <header>
         <h1>YKS Günlük Soru Takip Sistemi</h1>
-        <p class="subtitle">Öğrenci numarasına tıklayarak detayı görebilir, Excel ve PDF raporu alabilirsiniz.</p>
+        <p class="subtitle">Öğrenci numarasına tıklayarak detaylı soru analizini ve genel toplamı görebilirsiniz.</p>
     </header>
 
     <div class="controls">
@@ -206,7 +221,6 @@
             <button onclick="saveData()">Verileri Kaydet</button>
             <button class="btn-excel" onclick="exportToExcel()">📊 Excel'e Aktar</button>
             <button class="btn-print" onclick="window.print()">📄 PDF / Yazdır</button>
-            <button class="btn-reset" onclick="resetData()">Sıfırla</button>
         </div>
     </div>
 
@@ -216,21 +230,34 @@
                 <tr>
                     <th>Öğrenci No</th>
                     <th>Matematik</th>
+                    <th>Geometri</th>
+                    <th>Fizik</th>
+                    <th>Kimya</th>
+                    <th>Biyoloji</th>
                     <th>Türkçe</th>
-                    <th>Tarih</th>
-                    <th>Coğrafya</th>
-                    <th>Felsefe</th>
-                    <th>Din Kültürü</th>
-                    <th>Fen</th>
+                    <th>Sosyal</th>
                     <th>Toplam</th>
                 </tr>
             </thead>
             <tbody id="studentTableBody"></tbody>
+            <tfoot>
+                <tr>
+                    <td style="text-align: left;">Genel Toplam</td>
+                    <td id="col-total-mat">0</td>
+                    <td id="col-total-geo">0</td>
+                    <td id="col-total-fizik">0</td>
+                    <td id="col-total-kimya">0</td>
+                    <td id="col-total-biyo">0</td>
+                    <td id="col-total-turkce">0</td>
+                    <td id="col-total-sosyal">0</td>
+                    <td id="grand-total">0</td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 
     <!-- Modal Detay Penceresi -->
-    <div id="studentModal" class="modal">
+    <div id="studentModal" class="modal" onclick="closeModalOnOuterClick(event)">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalStudentTitle">Öğrenci Detayı</h2>
@@ -241,22 +268,20 @@
     </div>
 
     <script>
-        // Öğrenci Numaraları Listesi
         const studentNumbers = [
             "6", "174", "226", "252", "331", "357", "362", "369", "378", "389",
             "390", "393", "407", "418", "434", "436", "463", "475", "484", "508",
             "517", "534", "535", "548", "556", "588", "600", "602", "608", "625"
         ];
 
-        // Ders Listesi
         const subjects = [
             { id: 'mat', name: 'Matematik' },
+            { id: 'geo', name: 'Geometri' },
+            { id: 'fizik', name: 'Fizik' },
+            { id: 'kimya', name: 'Kimya' },
+            { id: 'biyo', name: 'Biyoloji' },
             { id: 'turkce', name: 'Türkçe' },
-            { id: 'tarih', name: 'Tarih' },
-            { id: 'cografya', name: 'Coğrafya' },
-            { id: 'felsefe', name: 'Felsefe' },
-            { id: 'din', name: 'Din Kültürü' },
-            { id: 'fen', name: 'Fen' }
+            { id: 'sosyal', name: 'Sosyal' }
         ];
 
         const dateInput = document.getElementById('dateSelect');
@@ -270,7 +295,7 @@
                 
                 let inputsHtml = subjects.map(sub => `
                     <td>
-                        <input type="number" min="0" class="subject-input" data-student="${num}" data-subject="${sub.id}" value="0" oninput="calculateTotal('${num}')">
+                        <input type="number" min="0" class="subject-input" data-student="${num}" data-subject="${sub.id}" value="0" oninput="updateAllCalculations('${num}')">
                     </td>
                 `).join('');
 
@@ -286,13 +311,34 @@
             loadData();
         }
 
-        function calculateTotal(studentNum) {
+        function calculateStudentDailyTotal(studentNum) {
             let total = 0;
             subjects.forEach(sub => {
                 const input = document.querySelector(`input[data-student="${studentNum}"][data-subject="${sub.id}"]`);
                 total += parseInt(input.value) || 0;
             });
             document.getElementById(`total-${studentNum}`).innerText = total;
+        }
+
+        function calculateColumnTotals() {
+            let grandTotal = 0;
+
+            subjects.forEach(sub => {
+                let subjectColumnTotal = 0;
+                studentNumbers.forEach(num => {
+                    const input = document.querySelector(`input[data-student="${num}"][data-subject="${sub.id}"]`);
+                    subjectColumnTotal += parseInt(input.value) || 0;
+                });
+                document.getElementById(`col-total-${sub.id}`).innerText = subjectColumnTotal;
+                grandTotal += subjectColumnTotal;
+            });
+
+            document.getElementById('grand-total').innerText = grandTotal;
+        }
+
+        function updateAllCalculations(studentNum) {
+            calculateStudentDailyTotal(studentNum);
+            calculateColumnTotals();
         }
 
         function saveData() {
@@ -325,21 +371,23 @@
                         input.value = 0;
                     }
                 });
-                calculateTotal(num);
+                calculateStudentDailyTotal(num);
             });
+            calculateColumnTotals();
         }
 
+        // Öğrencinin seçili gün ve tüm zamanlardaki soru toplamını hesaplar
         function openStudentDetail(studentNum) {
-            document.getElementById('modalStudentTitle').innerText = `Öğrenci No: ${studentNum} - Rapor`;
+            document.getElementById('modalStudentTitle').innerText = `Öğrenci No: ${studentNum} - Performans Raporu`;
             const modalBody = document.getElementById('modalBody');
             
-            let totalQuestions = 0;
-            let detailHtml = '<div style="margin-top:10px;">';
+            let dailyTotal = 0;
+            let detailHtml = '<h3 style="font-size:0.95rem; color:var(--text-muted); margin-bottom:8px;">Seçili Günün Ders Dağılımı:</h3>';
 
             subjects.forEach(sub => {
                 const input = document.querySelector(`input[data-student="${studentNum}"][data-subject="${sub.id}"]`);
                 const val = parseInt(input.value) || 0;
-                totalQuestions += val;
+                dailyTotal += val;
                 
                 detailHtml += `
                     <div class="stat-item">
@@ -350,11 +398,32 @@
             });
 
             detailHtml += `
-                <div class="stat-item" style="font-size:1.1rem; font-weight:bold; color:var(--primary); margin-top:12px;">
+                <div class="stat-item" style="font-size:1rem; font-weight:bold; color:var(--primary); margin-top:8px;">
                     <span>Günlük Toplam:</span>
-                    <span>${totalQuestions} Soru</span>
+                    <span>${dailyTotal} Soru</span>
                 </div>
-            </div>`;
+            `;
+
+            // Tüm zamanlardaki toplam soruyu hesaplama
+            let grandAllTimeTotal = 0;
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('yks_data_')) {
+                    const dayData = JSON.parse(localStorage.getItem(key));
+                    if (dayData && dayData[studentNum]) {
+                        Object.values(dayData[studentNum]).forEach(val => {
+                            grandAllTimeTotal += parseInt(val) || 0;
+                        });
+                    }
+                }
+            }
+
+            detailHtml += `
+                <div class="overall-box">
+                    <div style="font-size:0.85rem; color:var(--text-muted);">Sistemdeki Tüm Günlerin Toplamı</div>
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--primary);">${grandAllTimeTotal} Soru</div>
+                </div>
+            `;
 
             modalBody.innerHTML = detailHtml;
             document.getElementById('studentModal').style.display = 'flex';
@@ -364,12 +433,19 @@
             document.getElementById('studentModal').style.display = 'none';
         }
 
-        /* Excel / CSV İndirme İşlevi */
+        function closeModalOnOuterClick(e) {
+            if (e.target.id === 'studentModal') closeModal();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
         function exportToExcel() {
             const selectedDate = dateInput.value || 'Tarihsiz';
-            let csvContent = "\uFEFF"; // Türkçe karakter desteği için BOM
+            let csvContent = "\uFEFF";
             csvContent += `Tarih: ${selectedDate}\n\n`;
-            csvContent += "Ogrenci No,Matematik,Turkce,Tarih,Cografya,Felsefe,Din Kulturu,Fen,Toplam\n";
+            csvContent += "Ogrenci No,Matematik,Geometri,Fizik,Kimya,Biyoloji,Turkce,Sosyal,Toplam\n";
 
             studentNumbers.forEach(num => {
                 let row = [`No: ${num}`];
@@ -394,14 +470,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-
-        function resetData() {
-            if (confirm('Seçili günün verilerini sıfırlamak istiyor musunuz?')) {
-                const dateKey = dateInput.value;
-                localStorage.removeItem(`yks_data_${dateKey}`);
-                loadData();
-            }
         }
 
         dateInput.addEventListener('change', loadData);
